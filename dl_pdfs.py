@@ -2,7 +2,6 @@ import requests
 import sys
 import os
 from random import choice
-import ipdb
 
 
 URL_FILE = "list_pdfs.txt"
