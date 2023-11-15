@@ -2,12 +2,16 @@ from PyPDF2 import PdfReader
 import sys
 import glob
 from pathlib import Path
+from tqdm import tqdm
 
 LOG_FILE = "parse.log"
 log_fp = open(LOG_FILE, "w")
 
-for fname in glob.glob("./pdfs/*.pdf"):
-    print(fname)
+all_files = [f for f in glob.glob("./pdfs/*.pdf")]
+
+for i in tqdm(range(len(all_files))):
+    fname = all_files[i]
+
     try:
         f = open(fname, "rb")
         reader = PdfReader(f)
@@ -25,7 +29,7 @@ for fname in glob.glob("./pdfs/*.pdf"):
         txt_file.close()
         print(fname, len(words), file=log_fp)
     except Exception as e:
-        print(f"Err {fname}: {e}")
+        print(f"Err {fname}: {e}", file=log_fp)
         pass
 
 log_fp.close()

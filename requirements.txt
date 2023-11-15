@@ -1,3 +1,5 @@
 PyPDF2
 PyCryptodome
 nltk
+tqdm
+requests
