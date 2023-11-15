@@ -1,6 +1,7 @@
 import sys
 import glob
 from pathlib import Path
+from nltk.corpus import stopwords
 
 LOG_FILE = "corpus.log"
 OUT_FILE = "corpus.txt"
