@@ -1,12 +1,21 @@
 # mapaie
 
+
+## Creating a virtual environment
+
+```
+pip install virtualenv
+virtualenv venv
+```
+
 ## Getting started
 
 Clone the repository, and make sure the python package virtualenv is installed.
 
+
 ```
 cd mapaie
-source .venv/bin/activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
