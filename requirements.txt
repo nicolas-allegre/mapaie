@@ -4,3 +4,5 @@ nltk
 tqdm
 requests
 snakemake
+numpy
+scikit-learn
