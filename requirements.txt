@@ -3,3 +3,4 @@ PyCryptodome
 nltk
 tqdm
 requests
+snakemake
