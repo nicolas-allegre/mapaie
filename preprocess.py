@@ -33,17 +33,21 @@ def tfidf_filter(corpus):
     median_tfidf = np.quantile(tfidf_values, 0.5)
     mask = tfidf_values > median_tfidf
     words_to_keep = vectorizer.get_feature_names_out()[mask]
+    print(type(words_to_keep))
     return words_to_keep
 
 corpus_filt_tfidf = []
-words_to_keep = tfidf_filter(corpus)
+# words_to_keep = tfidf_filter(corpus)
 
-for d in tqdm(corpus):
+for i, d in enumerate(tqdm(corpus)):
     words = d.split()
-    filt_words = [w for w in words if w in words_to_keep]
-    corpus_filt_tfidf.append(filt_words)
+    # filt_words = [w for w in words if w in words_to_keep]
+    # corpus_filt_tfidf.append(filt_words)
+    f = open(f"preprocessed/{i}.txt", "w")
+    f.write(" ".join(words) + "\n")
+    f.close()
 
-with open('corpus_filt_tfidf.txt', 'w') as f:
-    for d in corpus_filt_tfidf:
-        doc = ' '.join(d)
-        f.write(doc + '\n')
+# with open('corpus_filt_tfidf.txt', 'w') as f:
+#    for d in corpus_filt_tfidf:
+#        doc = ' '.join(d)
+#        f.write(doc + '\n')
