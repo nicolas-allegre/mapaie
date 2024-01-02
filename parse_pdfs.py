@@ -1,11 +1,17 @@
 from PyPDF2 import PdfReader
 import sys
 import glob
+import os
 from pathlib import Path
 from tqdm import tqdm
 
 LOG_FILE = "parse.log"
+OUT_FOLDER = "./txts"
 log_fp = open(LOG_FILE, "w")
+
+# Create output directory if it does not exist
+if not os.path.exists(OUT_FOLDER):
+    os.makedirs(OUT_FOLDER)
 
 all_files = [f for f in glob.glob("./pdfs/*.pdf")]
 
