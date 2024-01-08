@@ -1,41 +1,33 @@
-from PyPDF2 import PdfReader
-import sys
 import glob
 import os
-from pathlib import Path
 from tqdm import tqdm
+import magic
+
+from Parser import Parser
 
 LOG_FILE = "parse.log"
 OUT_FOLDER = "./txts"
 log_fp = open(LOG_FILE, "w")
 
+p = Parser(log_file=log_fp)
+
 # Create output directory if it does not exist
 if not os.path.exists(OUT_FOLDER):
     os.makedirs(OUT_FOLDER)
 
-all_files = [f for f in glob.glob("./pdfs/*.pdf")]
+all_files = [f for f in glob.glob("./docs/*")]
 
 for i in tqdm(range(len(all_files))):
     fname = all_files[i]
+    ftype = magic.from_file(fname, mime=True)
 
-    try:
-        f = open(fname, "rb")
-        reader = PdfReader(f)
-        words = set()
-        txt_file = open(f"txts/{Path(fname).stem}.txt", "w+", encoding="utf-8")
-        
-        for page in reader.pages:
-            page_contents = page.extract_text()
-            page_contents = page_contents.replace("-\n", "")
-            page_contents = page_contents.replace("\n", " ")
-            print(page_contents, file=txt_file)
-            words = words.union(set(page_contents.split(" ")))
-        
-        f.close()
-        txt_file.close()
-        print(fname, len(words), file=log_fp)
-    except Exception as e:
-        print(f"Err {fname}: {e}", file=log_fp)
-        pass
+    if ftype == "text/html" or ftype == "text/xml":
+        # this is a html file
+        p.parse_html(fname)
+    elif ftype == "application/pdf":
+        # this is a pdf file
+        p.parse_pdf(fname)
+    else:
+        print(f"ERR. NOT A RECOGNIZED FILETYPE: {fname}, {ftype}.", file=log_fp)
 
 log_fp.close()
