@@ -1,6 +1,7 @@
 import glob
 from tqdm import tqdm
 import numpy as np
+import os
 
 import nltk as nltk
 from nltk.tokenize import word_tokenize
@@ -11,6 +12,11 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 corpus = []
 stop_words = set(stopwords.words('english'))
+OUT_FOLDER = "preprocessed/"
+
+# Create output directory if it does not exist
+if not os.path.exists(OUT_FOLDER):
+    os.makedirs(OUT_FOLDER)
 
 print(f'Preprocessing...')
 for i, filename in enumerate(tqdm(glob.glob('txts/*.txt'))):
@@ -19,8 +25,16 @@ for i, filename in enumerate(tqdm(glob.glob('txts/*.txt'))):
         lines = f.read().strip()
         # Tokenize
         tokens = word_tokenize(lines)
-        # Remove tokens with length < 3
-        tokens = (' ').join([t.lower() for t in tokens if len(t) > 3 and t.isalpha() and t.lower() not in stop_words])
+        # Remove tokens with length < 3, not a link and not in stop words
+        tokens = (' ').join([t.lower() for t in tokens
+            if len(t) > 3 
+            and t.isalpha() 
+            and t.lower() not in stop_words 
+            and not "http" in t.lower()
+        ])
+
+        # ngrams ?
+
         # Save tokens
         corpus.append(tokens)
 
@@ -43,7 +57,7 @@ for i, d in enumerate(tqdm(corpus)):
     words = d.split()
     # filt_words = [w for w in words if w in words_to_keep]
     # corpus_filt_tfidf.append(filt_words)
-    f = open(f"preprocessed/{i}.txt", "w")
+    f = open(f"{OUT_FOLDER}/{i}.txt", "w")
     f.write(" ".join(words) + "\n")
     f.close()
 
