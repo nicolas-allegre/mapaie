@@ -1,3 +1,4 @@
+ujson
 PyPDF2
 PyCryptodome
 nltk
