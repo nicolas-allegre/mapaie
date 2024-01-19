@@ -27,8 +27,8 @@ for i, filename in enumerate(tqdm(glob.glob('txts/*.txt'))):
         tokens = word_tokenize(lines)
         # Remove tokens with length < 3, not a link and not in stop words
         tokens = (' ').join([t.lower() for t in tokens
-            if len(t) > 3 
-            and t.isalpha() 
+            if len(t) >= 3 
+            and (t.isalpha() or t in "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~")
             and t.lower() not in stop_words 
             and not "http" in t.lower()
         ])
