@@ -1,10 +1,10 @@
+pulp==2.7.0
 ujson
 PyPDF2
 PyCryptodome
 nltk
 tqdm
 requests
-snakemake
 numpy
 scikit-learn
 bs4
