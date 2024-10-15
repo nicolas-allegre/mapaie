@@ -9,3 +9,4 @@ numpy
 scikit-learn
 bs4
 python-magic
+langdetect
