@@ -10,7 +10,9 @@ import os
 
 LOG_FILE = "corpus.log"
 OUT_FILE = "corpus.txt"
-log_fp = open(LOG_FILE, "w")
+CHARSET = 'UTF-8'
+
+log_fp = open(LOG_FILE, "w", encoding=CHARSET)
 
 # Parse arguments
 parser = argparse.ArgumentParser()
@@ -22,11 +24,11 @@ parser.add_argument("-t", "--themes")
 args = parser.parse_args()
 print(args)
 
-corpus_file = open(OUT_FILE, "w", encoding="utf-8")
+corpus_file = open(OUT_FILE, "w", encoding=CHARSET)
 nb_docs = 0
 
 # Keywords
-keywords = json.load(open(args.themes))
+keywords = json.load(open(args.themes, encoding=CHARSET))
 
 filt_crit = lambda x, kw_list: all(x)
 
@@ -56,7 +58,7 @@ for i, fname in enumerate(tqdm(glob.glob(f"./{args.data}/*.txt"))):
     doc_occurrences[i] = {}
 
     try:
-        f = open(fname, "r")
+        f = open(fname, "r", encoding=CHARSET)
         contents = f.read().strip().lower()
         doc_occurrences[i]["contents"] = contents
 
@@ -104,7 +106,7 @@ for i in doc_occurrences:
         for t in topics:
             # Creer dir topics
             if t.strip("*") != "mapaie":
-                file = open(f"{t.strip('*')}/{i}.txt", "w")
+                file = open(f"{t.strip('*')}/{i}.txt", "w", encoding=CHARSET)
                 print(doc_occurrences[i]["contents"], file=file) 
 
 log_fp.close()

@@ -12,12 +12,14 @@ MANIFESTOS_FILE = "all_manifestos.csv"
 UA_FILE = "user_agents.txt"
 OUT_FOLDER = "./docs"
 LOG_FILE = "dl_docs.log"
-log_fp = open(LOG_FILE, "w")
+CHARSET = 'UTF-8'
+
+log_fp = open(LOG_FILE, "w", encoding=CHARSET)
 
 
 def csv_to_dict(filepath):
     manifestos = {}
-    with open(filepath, encoding="utf8") as f:
+    with open(filepath, encoding=CHARSET) as f:
         data = csv.reader(f)
         headers = next(data)
         manifestos_list = []
@@ -32,13 +34,13 @@ def csv_to_dict(filepath):
 
 manifestos_list = csv_to_dict(MANIFESTOS_FILE)
 list_of_urls = [ x["URL"] for x in manifestos_list if x["Status"].lower() == "included" ]
-user_agents = [ x.strip() for x in open(UA_FILE).readlines() ] 
+user_agents = [ x.strip() for x in open(UA_FILE, encoding=CHARSET).readlines() ] 
 
 # Create output directory if it does not exist
 if not os.path.exists(OUT_FOLDER):
     os.makedirs(OUT_FOLDER)
 
-f_metadata = open("mapaie-metadata.csv", "w", encoding="utf8")
+f_metadata = open("mapaie-metadata.csv", "w", encoding=CHARSET)
 
 for i in tqdm(range(len(manifestos_list))):
     manifesto = manifestos_list[i]

@@ -7,7 +7,9 @@ from Parser import Parser
 
 LOG_FILE = "parse.log"
 OUT_FOLDER = "./txts"
-log_fp = open(LOG_FILE, "w")
+CHARSET = 'UTF-8'
+
+log_fp = open(LOG_FILE, "w", encoding=CHARSET)
 
 p = Parser(log_file=log_fp)
 

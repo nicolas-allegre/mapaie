@@ -13,6 +13,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 corpus = []
 stop_words = set(stopwords.words('english'))
 OUT_FOLDER = "preprocessed/"
+CHARSET = 'UTF-8'
 
 # Create output directory if it does not exist
 if not os.path.exists(OUT_FOLDER):
@@ -21,7 +22,7 @@ if not os.path.exists(OUT_FOLDER):
 print(f'Preprocessing...')
 for i, filename in enumerate(tqdm(glob.glob('txts/*.txt'))):
     name = filename.split('/')[1].split('.')[0]
-    with open(filename) as f:
+    with open(filename, encoding=CHARSET) as f:
         lines = f.read().strip()
         # Tokenize
         tokens = word_tokenize(lines)
