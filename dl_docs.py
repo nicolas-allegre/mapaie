@@ -11,9 +11,12 @@ URL_FILE = "list_urls.txt"
 MANIFESTOS_FILE = "all_manifestos.csv"
 UA_FILE = "user_agents.txt"
 OUT_FOLDER = "./docs"
-LOG_FILE = "dl_docs.log"
+LOG_FOLDER = "log/"
+LOG_FILENAME = "dl_docs.log"
+LOG_FILE = os.path.join(LOG_FOLDER, LOG_FILENAME)
 CHARSET = 'UTF-8'
 
+os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)  # Create log folder if not exist
 log_fp = open(LOG_FILE, "w", encoding=CHARSET)
 
 

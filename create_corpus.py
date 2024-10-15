@@ -8,10 +8,13 @@ from tqdm import tqdm
 import ujson as json
 import os
 
-LOG_FILE = "corpus.log"
+LOG_FOLDER = "log/"
+LOG_FILENAME = "corpus.log"
+LOG_FILE = os.path.join(LOG_FOLDER, LOG_FILENAME)
 OUT_FILE = "corpus.txt"
 CHARSET = 'UTF-8'
 
+os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
 log_fp = open(LOG_FILE, "w", encoding=CHARSET)
 
 # Parse arguments

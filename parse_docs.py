@@ -5,10 +5,13 @@ import magic
 
 from Parser import Parser
 
-LOG_FILE = "parse.log"
+LOG_FOLDER = "log/"
+LOG_FILENAME = "parse.log"
+LOG_FILE = os.path.join(LOG_FOLDER, LOG_FILENAME)
 OUT_FOLDER = "./txts"
 CHARSET = 'UTF-8'
 
+os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
 log_fp = open(LOG_FILE, "w", encoding=CHARSET)
 
 p = Parser(log_file=log_fp)
