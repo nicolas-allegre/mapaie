@@ -8,17 +8,19 @@ import csv
 requests.packages.urllib3.disable_warnings()
 
 URL_FILE = "list_urls.txt"
-MANIFESTOS_FILE = "all_manifestos.csv"
 UA_FILE = "user_agents.txt"
-OUT_FOLDER = "./docs"
+MANIFESTOS_FILE = "all_manifestos.csv"
+METADATA_FILENAME = "mapaie-metadata.csv"
+DATA_FOLDER = 'data'
 LOG_FOLDER = "log/"
 LOG_FILENAME = "dl_docs.log"
 LOG_FILE = os.path.join(LOG_FOLDER, LOG_FILENAME)
+OUT_FOLDER = os.path.join(DATA_FOLDER, "docs")
+METADATA_FILE = os.path.join(DATA_FOLDER, METADATA_FILENAME)
 CHARSET = 'UTF-8'
 
+os.makedirs(OUT_FOLDER, exist_ok=True)
 os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)  # Create log folder if not exist
-log_fp = open(LOG_FILE, "w", encoding=CHARSET)
-
 
 def csv_to_dict(filepath):
     manifestos = {}
@@ -35,15 +37,13 @@ def csv_to_dict(filepath):
             manifestos_list.append(manifesto)
     return manifestos_list
 
+
 manifestos_list = csv_to_dict(MANIFESTOS_FILE)
 list_of_urls = [ x["URL"] for x in manifestos_list if x["Status"].lower() == "included" ]
 user_agents = [ x.strip() for x in open(UA_FILE, encoding=CHARSET).readlines() ] 
 
-# Create output directory if it does not exist
-if not os.path.exists(OUT_FOLDER):
-    os.makedirs(OUT_FOLDER)
-
-f_metadata = open("mapaie-metadata.csv", "w", encoding=CHARSET)
+log_fp = open(LOG_FILE, "w", encoding=CHARSET)
+f_metadata = open(METADATA_FILE, "w", encoding=CHARSET)
 
 for i in tqdm(range(len(manifestos_list))):
     manifesto = manifestos_list[i]
@@ -54,22 +54,22 @@ for i in tqdm(range(len(manifestos_list))):
     try:
         headers = { "User-Agent": choice(user_agents), "Referer": "http://perdu.com" }
         response = requests.get(url, headers=headers, timeout=10, verify=False)
+        
+        if response.status_code == 200:
+            print(f"{url},OK", file=log_fp)
+            if url[-4:] == ".pdf":
+                with open(f"{OUT_FOLDER}/{i}.pdf", "wb") as f:
+                    f.write(response.content)
+            else:
+                with open(f"{OUT_FOLDER}/{i}.html", "wb") as f:
+                    f.write(response.content)
+            f_metadata.write(f"{i}|{title}|{institution}\n")
+        else:
+            # if we received any error http code
+            print(f"ERR: {url},{response.status_code}", file=log_fp)
     except requests.exceptions.RequestException as e:
         print(f"ERR: {url}, {e}", file=log_fp)
 
-    if response.status_code == 200:
-        print(f"{url},OK", file=log_fp)
-        if url[-4:] == ".pdf":
-            with open(f"{OUT_FOLDER}/{i}.pdf", "wb") as f:
-                f.write(response.content)
-        else:
-            with open(f"{OUT_FOLDER}/{i}.html", "wb") as f:
-                f.write(response.content)
-        f_metadata.write(f"{i}|{title}|{institution}\n")
-
-    else:
-        # if we received any error http code
-        print(f"ERR: {url},{response.status_code}", file=log_fp)
 
 log_fp.close()
 f_metadata.close()

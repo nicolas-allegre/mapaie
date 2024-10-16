@@ -8,13 +8,17 @@ from tqdm import tqdm
 import ujson as json
 import os
 
+DATA_FOLDER = 'data'
 LOG_FOLDER = "log/"
 LOG_FILENAME = "corpus.log"
 LOG_FILE = os.path.join(LOG_FOLDER, LOG_FILENAME)
-OUT_FILE = "corpus.txt"
+OUT_FILENAME = "corpus.txt"
+OUT_FILE = os.path.join(DATA_FOLDER, OUT_FILENAME)
 CHARSET = 'UTF-8'
 
+os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
 os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+
 log_fp = open(LOG_FILE, "w", encoding=CHARSET)
 
 # Parse arguments
@@ -45,12 +49,15 @@ if args.method == "iramuteq":
 elif args.method == "cortext":
     cortext = True
     iramuteq = False
+    folder = os.path.join(DATA_FOLDER, f'corpus_{args.method}')
 
     for t in keywords:
-        if not os.path.exists(t):
-            os.makedirs(t)
+        os.makedirs(os.path.join(folder, t), exist_ok=True)
 else:
     iramuteq = True
+
+os.makedirs(os.path.join(DATA_FOLDER, f'corpus_{args.method}'), exist_ok=True)
+folder_name = os.path.join(DATA_FOLDER, f'corpus_{args.method}')
 
 # Counting docs per theme
 doc_counts = { k: 0 for k, v in keywords.items() }
@@ -72,7 +79,7 @@ for i, fname in enumerate(tqdm(glob.glob(f"./{args.data}/*.txt"))):
         
         f.close()
     except Exception as e:
-        print(f"Err {fname}: {e}")
+        print(f"Err {fname}: {e}", file=log_fp)
         pass
 
 # Write out topics
@@ -109,14 +116,16 @@ for i in doc_occurrences:
         for t in topics:
             # Creer dir topics
             if t.strip("*") != "mapaie":
-                file = open(f"{t.strip('*')}/{i}.txt", "w", encoding=CHARSET)
+                file = open(os.path.join(folder_name, f"{t.strip('*')}/{i}.txt"), "w", encoding=CHARSET)
                 print(doc_occurrences[i]["contents"], file=file) 
+
+# regarder aussi les co-occurrences de thèmes
+print("Summary stats", file=log_fp)
+for k, v in doc_counts.items():
+    tmp = '-'
+    if nb_docs != 0:
+        tmp = v / nb_docs * 100
+    print(f"{k}: {v} ({tmp}%)", file=log_fp) 
 
 log_fp.close()
 corpus_file.close()
-
-# regarder aussi les co-occurrences de thèmes
-print("Summary stats")
-for k, v in doc_counts.items():
-    print(f"{k}: {v} ({v/nb_docs*100}%)") 
-

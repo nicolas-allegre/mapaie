@@ -9,19 +9,18 @@ from nltk.corpus import stopwords
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+DATA_FOLDER = 'data'
+OUT_FOLDER = os.path.join(DATA_FOLDER, "preprocessed")
+TXT_FOLDER = os.path.join(DATA_FOLDER, "txts")
+CHARSET = 'UTF-8'
+
+os.makedirs(OUT_FOLDER, exist_ok=True)
 
 corpus = []
 stop_words = set(stopwords.words('english'))
-OUT_FOLDER = "preprocessed/"
-CHARSET = 'UTF-8'
-
-# Create output directory if it does not exist
-if not os.path.exists(OUT_FOLDER):
-    os.makedirs(OUT_FOLDER)
 
 print(f'Preprocessing...')
-for i, filename in enumerate(tqdm(glob.glob('txts/*.txt'))):
-    # name = filename.split('/')[1].split('.')[0]
+for i, filename in enumerate(tqdm(glob.glob(f'{TXT_FOLDER}/*.txt'))):
     name = os.path.basename(filename).split('.')[0]
     with open(filename, encoding=CHARSET) as f:
         lines = f.read().strip()

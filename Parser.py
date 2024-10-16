@@ -1,9 +1,13 @@
+import os
 import sys
 from PyPDF2 import PdfReader
 import magic
 from bs4 import BeautifulSoup
 from pathlib import Path
 
+CHARSET = 'UTF-8'
+DATA_FOLDER = 'data'
+TXT_FOLDER = os.path.join(DATA_FOLDER, "txts")
 
 class Parser:
 
@@ -60,7 +64,7 @@ class Parser:
         call(all_children, 0)
 
         ## Write to file
-        txt_file = open(f"txts/{Path(fname).stem}.txt", "w+", encoding="utf-8")
+        txt_file = open(os.path.join(TXT_FOLDER, f"{Path(fname).stem}.txt"), "w+", encoding=CHARSET)
         print(THE_CONTENT["text"], file=txt_file)
         txt_file.close()
         
@@ -72,7 +76,7 @@ class Parser:
             f = open(fname, "rb")
             reader = PdfReader(f)
             words = set()
-            txt_file = open(f"txts/{Path(fname).stem}.txt", "w+", encoding="utf-8")
+            txt_file = open(os.path.join(TXT_FOLDER, f"{Path(fname).stem}.txt"), "w+", encoding=CHARSET)
             
             for page in reader.pages:
                 page_contents = page.extract_text()

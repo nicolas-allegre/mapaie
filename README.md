@@ -83,6 +83,6 @@ python dl_docs.py
 python parse_docs.py
 python preproccess.py
 python create_corpus_before_lang.py
-python create_corpus.py -t themes.json -d preprocessed/ -m iramuteq
-python create_corpus.py -t themes.json -d preprocessed/ -m cortext
+python create_corpus.py -t themes.json -d data/preprocessed/ -m iramuteq
+python create_corpus.py -t themes.json -d data/preprocessed/ -m cortext
 ```
