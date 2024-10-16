@@ -13,10 +13,8 @@ LOG_FOLDER = "log/"
 LOG_FILENAME = "corpus.log"
 LOG_FILE = os.path.join(LOG_FOLDER, LOG_FILENAME)
 OUT_FILENAME = "corpus.txt"
-OUT_FILE = os.path.join(DATA_FOLDER, OUT_FILENAME)
 CHARSET = 'UTF-8'
 
-os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
 os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
 
 log_fp = open(LOG_FILE, "w", encoding=CHARSET)
@@ -31,9 +29,6 @@ parser.add_argument("-t", "--themes")
 args = parser.parse_args()
 print(args)
 
-corpus_file = open(OUT_FILE, "w", encoding=CHARSET)
-nb_docs = 0
-
 # Keywords
 keywords = json.load(open(args.themes, encoding=CHARSET))
 
@@ -42,24 +37,23 @@ filt_crit = lambda x, kw_list: all(x)
 iramuteq = False
 cortext = False
 
-
+folder_name = os.path.join(DATA_FOLDER, f'corpus_{args.method}')
 if args.method == "iramuteq":
     iramuteq = True
-    cortext = False
 elif args.method == "cortext":
     cortext = True
-    iramuteq = False
-    folder = os.path.join(DATA_FOLDER, f'corpus_{args.method}')
 
     for t in keywords:
-        os.makedirs(os.path.join(folder, t), exist_ok=True)
+        os.makedirs(os.path.join(folder_name, t), exist_ok=True)
 else:
     iramuteq = True
+    folder_name = os.path.join(DATA_FOLDER, f'corpus_iramuteq')
 
-os.makedirs(os.path.join(DATA_FOLDER, f'corpus_{args.method}'), exist_ok=True)
-folder_name = os.path.join(DATA_FOLDER, f'corpus_{args.method}')
+os.makedirs(folder_name, exist_ok=True)
+corpus_file = open(os.path.join(folder_name, OUT_FILENAME), "w", encoding=CHARSET)
 
 # Counting docs per theme
+nb_docs = 0
 doc_counts = { k: 0 for k, v in keywords.items() }
 doc_occurrences = {}
 
