@@ -13,7 +13,7 @@ LOG_FILE = os.path.join(LOG_FOLDER, LOG_FILENAME)
 OUT_FILENAME = 'corpus_lang.csv'
 OUT_FILE = os.path.join(DATA_FOLDER, OUT_FILENAME)
 CHARSET = 'UTF-8'
-DEFAULT_FOLDER_PREPROCESSED = 'data/preprocessed/'
+DEFAULT_FOLDER_PREPROCESSED = 'data/txts/'
 
 os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
 os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
@@ -59,6 +59,7 @@ for root, dirs, files in os.walk(data_folder):
             continue
         with open(file_path, 'r', encoding=CHARSET) as file:
             data = file.read()
+            print(file_path, os.path.getsize(file_path), len(data))
             lang_detect = detect(data)
             langs_detect = detect_langs(data)
             print(f"{file_name} : {lang_detect} ({langs_detect})", file=log_fp)
