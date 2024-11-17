@@ -1,30 +1,46 @@
-rule corpus:
+rule lang:
     input:
-        "preprocessed/",
+        "data/txts/",
     output:
-        "corpus.txt"
+        "data/corpus_lang.csv"
     shell:
-        "python create_corpus.py preprocessed/"
+        "python create_corpus_before_lang.py"
+
+rule corpus_iramuteq:
+    input:
+        "data/preprocessed/",
+    output:
+        directory("data/corpus_iramuteq/")
+    shell:
+        "python create_corpus.py -t themes.json -d data/preprocessed/ -m iramuteq"
+
+rule corpus_cortex:
+    input:
+        "data/preprocessed/",
+    output:
+        directory("data/corpus_cortex/")
+    shell:
+        "python create_corpus.py -t themes.json -d data/preprocessed/ -m cortext"
 
 rule preprocess:
     input:
-        "txts/",
+        "data/txts/",
     output:
-        directory("preprocessed/")
+        directory("data/preprocessed/")
     shell:
         "python preprocess.py"
 
 rule parse:
     input:
-        "docs/",
+        "data/docs/",
     output:
-        directory("txts/")
+        directory("data/txts/")
     shell:
         "python parse_docs.py"
 
 rule download:
     output:
-        directory("docs/")
+        directory("data/docs/")
     shell:
         "python dl_docs.py"
 

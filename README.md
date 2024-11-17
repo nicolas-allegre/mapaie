@@ -21,8 +21,23 @@ ssh-keygen -t ed25519 -C "MS IA <prenom.nom> GITLAB_Telecom-Paris" -f GITLAB_ENS
 
 3. Test de la connexion
 ```sh
-ssh -i ..\..\..\GITLAB_ENST_SSHKey -T git@gitlab.enst.fr
+ssh -i GITLAB_ENST_SSHKey -T git@gitlab.enst.fr
+
+4. Installation sur le système (surtout si plusieurs clé SSH)
+  1. Déplacement dans le dossier `.ssh` du dossier HOME (mv en Linux, move sous Windows).
+```sh
+mkdir ~/.ssh
+move GITLAB_ENST_SSHKey* ~/.ssh
 ```
+  2. Dans le fichier `~/.ssh/config` rajouter le contenu est le suivant (le créer s'il n'existe pas) :
+```
+Host gitlab.enst.fr
+    HostName gitlab.enst.fr
+    IdentityFile ~/.ssh/GITLAB_ENST_SSHKey
+    User git
+```
+
+
 
 ### Getting project environment
 
