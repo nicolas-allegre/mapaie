@@ -45,8 +45,6 @@ import penman
 import logging
 logging.getLogger('penman').setLevel(logging.ERROR)
 
-from metamorphosed.exception import ServerException
-#from exception import ServerException
 
 ONESPACE = re.compile("[ \n\t]+")
 
@@ -152,7 +150,7 @@ class AMRsentence:
                 if rtc:
                     return rtc
             except Exception as e:
-                raise ServerException('bad regular expression "%s": %s' % (regex, e))
+                raise Exception('bad regular expression "%s": %s' % (regex, e))
 
         return [] #False
 
@@ -164,7 +162,7 @@ class AMRsentence:
                     if rtc:
                         return rtc
             except Exception as e:
-                raise ServerException('bad regular expression "%s": %s' % (regex, e))
+                raise Exception('bad regular expression "%s": %s' % (regex, e))
 
         return [] #False
 
@@ -175,7 +173,7 @@ class AMRsentence:
                 if rtc:
                     return True
             except Exception as e:
-                raise ServerException('bad regular expression "%s": %s' % (regex, e))
+                raise Exception('bad regular expression "%s": %s' % (regex, e))
 
         return False
 
@@ -194,9 +192,9 @@ class AMRdoc:
         self.sentences = []
         self.ids = {} # id: sentence
         self.fn = fn
-
+        
         if isinstance(fn, str):
-            ifp = open(fn)
+            ifp = open(fn, encoding='utf-8')
         else:
             # here fn is a opened file or sys.stdin etc
             ifp = fn
@@ -380,6 +378,10 @@ def relations_between_concepts(ads, depth=2):
                         objectconcepts[oclass] += 1
                     else:
                         objectconcepts[oclass] = 1
+    
+    if concepts.get(None) != None:
+        concepts['_None'] = concepts.pop(None)
+    
     for c in sorted(concepts):
         if depth == 1:
             #print(c, concepts[c], sep="\t")
@@ -398,6 +400,7 @@ def relations_between_concepts(ads, depth=2):
                 #print("     %s\t%s" % (oc, concepts[c][r][oc]))
                 output.append("     %s\t%s" % (oc, concepts[c][r][oc]))
 
+    # return concepts
     return output
 
 
@@ -493,7 +496,7 @@ def stats(ads, conceptlist, plotting=True, outdir="."):
 
         def graph(dico, fn, mean, med, logscale=True):
             # print(sorted(dico.values()))
-            plt.rcParams["font.family"] = "Lato"
+            # plt.rcParams["font.family"] = "Lato"
             plt.rcParams["figure.figsize"] = [6.4, 2] # default 6.4, 4.8
             plt.bar(range(len(dico)), sorted(dico.values(), reverse=True),
                     color="#ff7900")
