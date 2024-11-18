@@ -36,18 +36,14 @@
 # version 4.3.0 as of 7th November 2024
 
 import re
-# import readline
-from pyreadline3 import Readline
-readline = Readline()
-
 import sys
 
 import penman
 from graphviz import Digraph
 
-import metamorphosed.graph as graph
-from metamorphosed.reification import getInstance
-import metamorphosed.amr_comparison as amr_comparison
+# import metamorphosed.graph as graph
+# from metamorphosed.reification import getInstance
+# import metamorphosed.amr_comparison as amr_comparison
 
 
 VERSION = "4.3.0"
@@ -173,43 +169,43 @@ class AMRProcessor:
         rtc = re.finditer("|".join(concepts), self.lastpm)
         return rtc
 
-    def ooofindsubgraph(self, subgraph, smatchpp=False):
-        # returns True if the subgraph is part of graph
-        try:
-            res = amr_comparison.compare(self.lastpm, subgraph, runs=1, use_smatchpp=smatchpp, align=True)
-            psg = penman.decode(subgraph)
-            subgraph_variables = psg.variables()
-            #print("====", self.lastpm)
-            #print(res.instances1OK)
-            #print(res.instances2OK)
-            #print(res.rel1OK)
-            #print(res.rel2OK)
-            #print(psg.edges())
-            #print(psg.attributes())
+    # def ooofindsubgraph(self, subgraph, smatchpp=False):
+        # # returns True if the subgraph is part of graph
+        # try:
+            # res = amr_comparison.compare(self.lastpm, subgraph, runs=1, use_smatchpp=smatchpp, align=True)
+            # psg = penman.decode(subgraph)
+            # subgraph_variables = psg.variables()
+            # #print("====", self.lastpm)
+            # #print(res.instances1OK)
+            # #print(res.instances2OK)
+            # #print(res.rel1OK)
+            # #print(res.rel2OK)
+            # #print(psg.edges())
+            # #print(psg.attributes())
 
-            if subgraph_variables == res.instances2OK:
-                # all variables of the subgraph are matched
-                # now check whether literals also match: all edges and attributes of subgraph musst be in
-                for s, p, o in psg.edges():
-                    if (s, p, o) not in res.rel2OK:
-                        #print("edge", s,p,o, "missing")
-                        return []
-                for s, p, o in psg.attributes():
-                    if (s, p, o) not in res.rel2OK:
-                        #print("attr", s,p,o, "missing")
-                        return []
+            # if subgraph_variables == res.instances2OK:
+                # # all variables of the subgraph are matched
+                # # now check whether literals also match: all edges and attributes of subgraph musst be in
+                # for s, p, o in psg.edges():
+                    # if (s, p, o) not in res.rel2OK:
+                        # #print("edge", s,p,o, "missing")
+                        # return []
+                # for s, p, o in psg.attributes():
+                    # if (s, p, o) not in res.rel2OK:
+                        # #print("attr", s,p,o, "missing")
+                        # return []
 
-                # find first concept of subgraph in graph (for highlighting)
-                firstinstance = psg.instances()[0]
-                firstconcept = firstinstance[2]
-                rtc = re.finditer(firstconcept, self.lastpm)
-                return rtc
-        except Exception as e:
-            # no valid PENMAN, take subgraph as a regex...
-            print("AMR Search error: %s" % e)
-            return self.findamr(subgraph)
+                # # find first concept of subgraph in graph (for highlighting)
+                # firstinstance = psg.instances()[0]
+                # firstconcept = firstinstance[2]
+                # rtc = re.finditer(firstconcept, self.lastpm)
+                # return rtc
+        # except Exception as e:
+            # # no valid PENMAN, take subgraph as a regex...
+            # print("AMR Search error: %s" % e)
+            # return self.findamr(subgraph)
 
-        return []
+        # return []
 
     def readpenman(self, amr):
         # AMR is in PENMAN format
@@ -454,7 +450,7 @@ class AMRProcessor:
                 noninst = []
                 for tr in self.triples:
                     noninst.append(tr)
-                sgs = graph.findsubgraphs(noninst)
+                # sgs = graph.findsubgraphs(noninst)
 
                 pms = []
                 for sg in sgs:
@@ -545,20 +541,20 @@ class AMRProcessor:
             return "invalid instance variable %s" % topvar
         #self.show()
 
-    def reify(self, reify):
-        reificator = getInstance()
-        if reificator:
-            npm = reificator.reify(self.lastpm, only=reify)
-            self.readpenman(npm)
+    # def reify(self, reify):
+        # reificator = getInstance()
+        # if reificator:
+            # npm = reificator.reify(self.lastpm, only=reify)
+            # self.readpenman(npm)
 
-    def dereify(self, dereify):
-        reificator = getInstance()
-        if reificator:
-            npm, msgs = reificator.dereify(self.lastpm, only=dereify)
-            if not msgs:
-                self.readpenman(npm)
+    # def dereify(self, dereify):
+        # reificator = getInstance()
+        # if reificator:
+            # npm, msgs = reificator.dereify(self.lastpm, only=dereify)
+            # if not msgs:
+                # self.readpenman(npm)
 
-        return msgs
+        # return msgs
 
     def addconcept(self, concept):
         var = self.newvar(concept)
