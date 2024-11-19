@@ -314,6 +314,27 @@ class AMRdoc:
                 msgs.append(str(e))
         return msgs
 
+    def validate_dict(self, validators):
+        result = {}
+        # msgs = []
+        for i, sent in enumerate(self.sentences):
+            msgs = []
+            for v in validators:
+                ee = v.validate(sent.tsv())
+                if ee:
+                    msgs += ee
+                #for e in ee:
+                #    print("ZZZ", e)
+            try:
+                ddd = penman.parse(sent.amr.replace("\n", "")) # penman needs \n replaced to detect quote errors
+                #print("eee",ddd)
+            except Exception as e:
+                msgs.append(str(e))
+            if msgs != []:
+                result[i] = {'msg': msgs, 'file': sent.comments[0]}
+        # return msgs
+        return result
+
     def getsentencelist(self):
         sents = []
         for sent in self.sentences:
