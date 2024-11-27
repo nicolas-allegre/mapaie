@@ -1,0 +1,6 @@
+amrdoc.stats([a], True)
+# sentences: 1201
+# relations: 55 mean: 431.07 median: 43
+# concepts: 2289 mean: 12.26 median: 2
+  # verbs:  1228 mean: 10.40 median: 3
+  # others: 1061 mean: 14.42 median: 2
