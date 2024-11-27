@@ -1,0 +1,183 @@
+### INSTALLATION
+#1- Graphviz
+#** Installer Graphviz
+#** Mettre Graphviz dans le PATH
+PATH=C:\Logiciel\_prog\Graphviz\bin;%PATH%
+
+#2- metamorphosed
+#** Préparation dépôt GIT
+git clone https://github.com/Orange-OpenSource/metamorphosed.git
+virtualenv venv
+.\venv\Scripts\activate
+cd metamorphosed
+python -m pip install --upgrade pip setuptools wheel
+
+#** Installation prérequis
+# python -m pip install -r requirements.txt
+#Pb install de smatchcpp, installation manuelle :
+python -m pip install pytest werkzeug Flask Flask-Cors graphviz Penman GitPython PyYAML requests rdflib oxrdflib
+
+#** Installation module smatchpp
+cd ..
+git clone https://github.com/flipz357/smatchpp.git
+cd smatchpp
+# Edit setup .py
+# =>long_description = (this_directory / "README.md").read_text(encoding='utf-8')
+python setup.py install
+
+#** Récupération AMR concept pour PropBank
+cd propbank-frames\frames
+curl https://raw.githubusercontent.com/propbank/propbank-frames/development/frames/AMR-UMR-91-rolesets.xml -o AMR-UMR-91-rolesets.xml
+cd ../..
+
+#** Installation metamorphosed
+python metamorphosed\installJQ.py
+
+#** Correction metamorphosed pour Windows :
+python -m pip install pyreadline3
+# Remplacer "import readline" dans les fichiers par :
+# => amreditor.py
+# => relations_constraints.py
+from pyreadline3 import Readline
+readline = Readline()
+
+#** Sécurité :
+# Remplacer '0.0.0.0' par '127.0.0.1' dans le fichier metamorphosed/__init__.py
+
+
+### EXECUTION :
+python metamorphosed_server.py --file amr-test.txt --pbframes propbank-frames/frames --readonly
+
+# exemple :
+metamorphosed_server.py --file amr-test.txt \
+--pbframes propbank-frames/frames \
+--reification reification-table.txt \
+--relations amr-relation-list.txt \
+--concepts amr-concept-list.txt \
+--constraints constraints.yml
+
+
+### TEST utilisation en local
+import metamorphosed.amrdoc as amrdoc
+filename = 'key_penmans.amr'
+a = amrdoc.AMRdoc(filename)
+a.getsentencelist()
+
+a.sentences[0].amr
+a.sentences[0].tsv()
+=>penman.decode(self.amr)
+
+>>> a.sentences[0].text
+'First of all, how can existing regulations or new ones facilitate algorithmic accountability  or fairness?'
+>>> a.sentences[0].comments
+['File 167']
+>>> a.sentences[0].amr
+
+amrdoc.stats([a], args.conceptlist)
+
+amrdoc.relations_between_concepts([a], depth=1)
+
+amrdoc.stats([a], ['fearness'])
+
+
+####
+armdoc.py
+Remplacer ServerException par Exception
+
+amrdoc.stats([a], ['fearness'])
+# sentences: 1201
+# relations: 55 mean: 431.07 median: 43
+# concepts: 2289 mean: 12.26 median: 2
+  # verbs:  1228 mean: 10.40 median: 3
+  # others: 1061 mean: 14.42 median: 2
+
+'face-01', 'facet', 'facilitate-01', 'facility', 'fact', 'factor', 'factor-01', 'fail-01', 'fair-01', 'fairness', 'fairwash-01', 'fall-01', 'fall-04', 'fallacy', 'familiarize-01', 'fatality', 'feasibility', 'feature', 'feature-01', 'federate-01', 'feed-01', 'feed-02', 'feedback', 'feel-01', 'few', 'fidelity', 'field', 'fight-01', 'figure', 'fill-01', 'fill-in-05', 'find-01', 'find-02', 'fine-04', 'fire-02', 'firm', 'fit-01', 'fit-03', 'fit-06', 'fix-03', 'flaw-01', 'flexibility', 'flow-01', 'focus-01', 'follow-01', 'follow-02', 'follow-04', 'follow-through-07', 'foresee-01', 'foreword', 'forgive-01', 'form', 'form-01', 'formalize-01', 'formula', 'formulate-01', 'foster-01', 'found-01', 'foundation', 'frame', 'frame-06', 'framework', 'free-04', 'frequent-02', 'friendly-01', 'from', 'fulfill-01', 'full-09', 'fun-01', 'function', 'function-01', 'functional-03', 'fund', 'fund-01', 'furnish-01', 'fuse-01', 'future',
+
+c=amrdoc.relations_between_concepts([a])
+d=[x.split('\t') for x in c]
+print(tabulate([x.split('\t') for x in c], tablefmt='pipe'))
+
+print(tabulate([x.split('\t') for x in amrdoc.relations_between_concepts([a], depth=2)], tablefmt='pipe'))
+
+c1 = [x.split('\t') for x in amrdoc.relations_between_concepts([a], depth=1)]
+concepts = set(x[0] for x in c1)
+stat_concept = dict.fromkeys(sorted(concepts), 0)
+for x in c1:
+    stat_concept[x[0]] = int(x[1])
+
+c2=[x.split('\t') for x in amrdoc.relations_between_concepts([a], depth=2)]
+relations = set(x[0] for x in c2) - concepts
+stat_relation = dict.fromkeys(sorted(relations), 0)
+stat_concept_relation = dict.fromkeys(sorted(concepts), {})
+tmp_concept = list(stat_concept_relation.keys())[0]
+for x in c2:
+    if len(x) == 1 and x[0] in concepts:  # C'est un concept
+        tmp_concept = x[0]
+        stat_concept_relation[tmp_concept] = dict.fromkeys(sorted(relations), 0)
+        continue
+    
+    if len(x) > 1:  # C'est une relation associé au concept précédant
+        stat_relation[x[0]] += int(x[1])
+        stat_concept_relation[tmp_concept][x[0]] = int(x[1])
+
+# print(tabulate(stat_concept_relation.values(), showindex=list(stat_concept_relation.keys()), headers='keys', tablefmt='pipe'))
+list_concept_tosee = ['fair-01', 'fairness', 'fairwash-01']
+list_relation_tosee = set([y for x in list_concept_tosee for y in stat_concept_relation[x] if stat_concept_relation[x][y] != 0])
+filtre = dict.fromkeys(list_concept_tosee, {})
+tmp = {x: {y.strip(): stat_concept_relation[x][y] for y in list_relation_tosee} for x in list_concept_tosee}
+print(tabulate(tmp.values(), showindex=list_concept_tosee, headers='keys', tablefmt='pipe'))
+
+
+print(tabulate([x.split('\t') for x in c], tablefmt='pipe'))
+
+['fair-01']
+['   :ARG0', '5']
+['   :ARG1', '156']
+['   :ARG2', '6']
+['   :ARG3', '1']
+['   :ARG4', '1']
+['   :condition', '6']
+['   :degree', '1']
+['   :domain', '1']
+['   :location', '3']
+['   :manner', '5']
+['   :mod', '13']
+['   :polarity', '58']
+['fairness']
+['   :ARG3', '1']
+['   :beneficiary', '2']
+['   :domain', '5']
+['   :example', '1']
+['   :li', '2']
+['   :location', '5']
+['   :manner', '6']
+['   :mod', '105']
+['   :polarity', '42']
+['   :poss', '15']
+['   :prep-in', '9']
+['   :prep-on', '1']
+['   :quant', '1']
+['   :source', '1']
+['   :time', '1']
+['   :topic', '10']
+['fairwash-01']
+['   :ARG0', '1']
+['   :ARG1', '1']
+['   :manner', '1']
+
+
+PATH=C:\Logiciel\_prog\Graphviz\bin;%PATH%
+cd Projet_NLP_AMR\AMR\
+venv\Scripts\activate
+
+
+import metamorphosed.propbank_frames as propbank_frames
+import metamorphosed.amrdoc as amrdoc
+
+v = propbank_frames.PropBankFrames('propbank-frames/frames')
+
+filename = 'key_penmans.amr'
+a = amrdoc.AMRdoc(filename)
+l = a.validate([v])
+# Ou avec la version corrigé sur le GIT mapaie :
+l = a.validate_dict([v])

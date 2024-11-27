@@ -1,0 +1,277 @@
+### CONFIGURATION ESPACE DE DEV
+#1- clé SSH GIT
+#** Création clé SSH
+ssh-keygen -t ed25519 -C "MS IA Nicolas.Allegre GITLAB_Telecom-Paris" -f GITLAB_ENSTA_SSHKey
+
+#** Dépôt sur le GITLAB
+# Test la connexion
+ssh -i ..\..\..\GITLAB_ENSTA_SSHKey -T git@gitlab.enst.fr
+
+#2- récupération GIT
+#** Cloner le dépôt
+git clone https://gitlab.telecom-paris.fr/tiphaine.viard/mapaie.git
+cd mapaie
+
+#** Configurer variables GIT pour le dépôt
+git config --local user.name "Nicolas Allègre"
+git config --local user.email "nicolas.allegre@telecom-paris.fr"
+git config --local core.sshCommand "ssh -i C:\\Users\\Allegre\\GITLAB_ENSTA_SSHKey"
+
+#3- Préparation environnement Python spécifique (car trop de paquet à module fixé)
+cd ..
+virtualenv venv
+.\venv\Scripts\activate
+cd mapaie
+git branch -v -a
+git switch ia717
+python -m pip install -r mapaie\requirements.txt
+
+#4- Correction pour utilisation Windows ou autre OS
+#Dans chaque fichier Python, ajouter UTF8 pour le fichier log.
+python dl_docs.py
+python parse_docs.py
+#Rajouter dans preproccess.py nltk.download('stopwords')
+#commenter la line name =
+python create_corpus.py -t themes.json -d preprocessed/ -m iramuteq
+python create_corpus.py -t themes.json -d preprocessed/ -m cortext
+
+#5- (option) Snake
+1- Installer "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+2- pip install snakemake
+
+### ERREURS ET CORRECTION CONSTATEES :
+ 75%|████████████████████████████████████████████████████████████▎                   | 550/730 [12:11<03:59,  1.33s/it]
+Traceback (most recent call last):
+  File "C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new\dl_docs.py", line 67, in <module>
+    print(f"ERR: {url},{response.status_code}", file=log_fp)
+  File "C:\Logiciel\_prog\Python\3.12\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u041e' in position 52: character maps to <undefined>
+
+=>Rajout de UTF-8 pour les logs log_fp = open(LOG_FILE, "w", encoding="utf8")
+
+
+C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new\preprocess.py:31: SyntaxWarning: invalid escape sequence '\]'
+  and (t.isalpha() or t in "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~")
+Preprocessing...
+  0%|                                                                                          | 0/624 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new\preprocess.py", line 23, in <module>
+    name = filename.split('/')[1].split('.')[0]
+           ~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+[Thu Oct 17 10:27:08 2024]
+
+=>Rajout correction : 
+    - and (t.isalpha() or t in "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+    - pour être multiplateforme Windows&Linux : name = os.path.basename(filename).split('.')[0]
+
+
+Preprocessing...
+  0%|                                                                                          | 0/624 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new\preprocess.py", line 25, in <module>
+    lines = f.read().strip()
+            ^^^^^^^^
+  File "C:\Logiciel\_prog\Python\3.12\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 11577: character maps to <undefined>
+
+=>Rajout UTF-8 : with open(filename, encoding="utf-8") as f:
+
+
+Preprocessing...
+100%|████████████████████████████████████████████████████████████████████████████████| 624/624 [00:57<00:00, 10.91it/s]
+  0%|▎                                                                                | 2/624 [00:00<00:01, 401.14it/s]
+Traceback (most recent call last):
+  File "C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new\preprocess.py", line 61, in <module>
+    f.write(" ".join(words) + "\n")
+  File "C:\Logiciel\_prog\Python\3.12\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\ufb01' in position 1805: character maps to <undefined>
+
+=>Rajout UTF-8 : f = open(f"{OUT_FOLDER}/{i}.txt", "w", encoding="utf-8")
+
+usage: create_corpus.py [-h] [-d DATA] [-m {iramuteq,cortext}] [-t THEMES]
+create_corpus.py: error: unrecognized arguments: preprocessed/
+
+=>snakemake -c4 ne marche pas, il manque des arguments.
+=>Lancer la commande manuellement :
+
+(venv) C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new>python create_corpus.py -t themes.json -d preprocessed/ -m cortext
+Namespace(data='preprocessed/', method='cortext', themes='themes.json')
+  0%|                                                                                          | 0/624 [00:00<?, ?it/s]Err ./preprocessed\102.txt: 'charmap' codec can't decode byte 0x81 in position 118: character maps to <undefined>
+  1%|▉                                                                                 | 7/624 [00:00<00:09, 64.00it/s]Err ./preprocessed\109.txt: 'charmap' codec can't decode byte 0x81 in position 119: character maps to <undefined>
+  2%|█▊                                                                               | 14/624 [00:00<00:14, 42.98it/s]Err ./preprocessed\112.txt: 'charmap' codec can't decode byte 0x81 in position 132: character maps to <undefined>
+Err ./preprocessed\114.txt: 'charmap' codec can't decode byte 0x81 in position 101: character maps to <undefined>
+Err ./preprocessed\116.txt: 'charmap' codec can't decode byte 0x81 in position 18968: character maps to <undefined>
+  3%|██▋                                                                              | 21/624 [00:00<00:11, 50.62it/s]Err ./preprocessed\117.txt: 'charmap' codec can't decode byte 0x81 in position 158: character maps to <undefined>
+  4%|███▌                                                                             | 27/624 [00:00<00:11, 51.13it/s]Err ./preprocessed\123.txt: 'charmap' codec can't decode byte 0x81 in position 136: character maps to <undefined>
+  5%|████▎                                                                            | 33/624 [00:00<00:11, 50.03it/s]Err ./preprocessed\129.txt: 'charmap' codec can't decode byte 0x9d in position 32940: character maps to <undefined>
+Err ./preprocessed\130.txt: 'charmap' codec can't decode byte 0x8d in position 43284: character maps to <undefined>
+Err ./preprocessed\131.txt: 'charmap' codec can't decode byte 0x81 in position 4098: character maps to <undefined>
+Err ./preprocessed\132.txt: 'charmap' codec can't decode byte 0x81 in position 52481: character maps to <undefined>
+  6%|█████                                                                            | 39/624 [00:00<00:12, 46.66it/s]Err ./preprocessed\133.txt: 'charmap' codec can't decode byte 0x8d in position 23079: character maps to <undefined>
+Err ./preprocessed\135.txt: 'charmap' codec can't decode byte 0x81 in position 26: character maps to <undefined>
+Err ./preprocessed\136.txt: 'charmap' codec can't decode byte 0x81 in position 26: character maps to <undefined>
+  8%|██████▎                                                                          | 49/624 [00:01<00:13, 44.15it/s]Err ./preprocessed\142.txt: 'charmap' codec can't decode byte 0x8d in position 2523: character maps to <undefined>
+  9%|███████▏                                                                         | 55/624 [00:01<00:12, 47.10it/s]Err ./preprocessed\149.txt: 'charmap' codec can't decode byte 0x8d in position 5399: character maps to <undefined>
+Err ./preprocessed\150.txt: 'charmap' codec can't decode byte 0x8d in position 128144: character maps to <undefined>
+Err ./preprocessed\151.txt: 'charmap' codec can't decode byte 0x81 in position 733: character maps to <undefined>
+Err ./preprocessed\153.txt: 'charmap' codec can't decode byte 0x8d in position 236555: character maps to <undefined>
+ 10%|████████                                                                         | 62/624 [00:01<00:10, 52.14it/s]Err ./preprocessed\156.txt: 'charmap' codec can't decode byte 0x81 in position 89202: character maps to <undefined>
+ 11%|████████▊                                                                        | 68/624 [00:01<00:11, 49.18it/s]Err ./preprocessed\16.txt: 'charmap' codec can't decode byte 0x81 in position 1503: character maps to <undefined>
+Err ./preprocessed\163.txt: 'charmap' codec can't decode byte 0x8d in position 20476: character maps to <undefined>
+Err ./preprocessed\165.txt: 'charmap' codec can't decode byte 0x8d in position 23337: character maps to <undefined>
+ 12%|█████████▋                                                                       | 75/624 [00:01<00:10, 53.40it/s]Err ./preprocessed\166.txt: 'charmap' codec can't decode byte 0x81 in position 209: character maps to <undefined>
+ 13%|██████████▌                                                                      | 81/624 [00:01<00:10, 52.63it/s]Err ./preprocessed\172.txt: 'charmap' codec can't decode byte 0x8d in position 36310: character maps to <undefined>
+Err ./preprocessed\173.txt: 'charmap' codec can't decode byte 0x81 in position 84984: character maps to <undefined>
+Err ./preprocessed\175.txt: 'charmap' codec can't decode byte 0x81 in position 90971: character maps to <undefined>
+Err ./preprocessed\176.txt: 'charmap' codec can't decode byte 0x8d in position 29327: character maps to <undefined>
+ 14%|███████████▍                                                                     | 88/624 [00:01<00:09, 57.27it/s]Err ./preprocessed\181.txt: 'charmap' codec can't decode byte 0x8d in position 27890: character maps to <undefined>
+Err ./preprocessed\182.txt: 'charmap' codec can't decode byte 0x8d in position 146524: character maps to <undefined>
+ 15%|████████████▎                                                                    | 95/624 [00:01<00:08, 60.12it/s]Err ./preprocessed\184.txt: 'charmap' codec can't decode byte 0x81 in position 171: character maps to <undefined>
+Err ./preprocessed\185.txt: 'charmap' codec can't decode byte 0x8d in position 67712: character maps to <undefined>
+Err ./preprocessed\186.txt: 'charmap' codec can't decode byte 0x81 in position 164: character maps to <undefined>
+Err ./preprocessed\187.txt: 'charmap' codec can't decode byte 0x81 in position 115: character maps to <undefined>
+Err ./preprocessed\188.txt: 'charmap' codec can't decode byte 0x81 in position 103: character maps to <undefined>
+Err ./preprocessed\189.txt: 'charmap' codec can't decode byte 0x9d in position 123700: character maps to <undefined>
+Err ./preprocessed\19.txt: 'charmap' codec can't decode byte 0x81 in position 314266: character maps to <undefined>
+Err ./preprocessed\190.txt: 'charmap' codec can't decode byte 0x8d in position 36310: character maps to <undefined>
+ 17%|█████████████▎                                                                  | 104/624 [00:01<00:08, 64.72it/s]Err ./preprocessed\195.txt: 'charmap' codec can't decode byte 0x81 in position 47896: character maps to <undefined>
+ 18%|██████████████▏                                                                 | 111/624 [00:02<00:08, 59.77it/s]Err ./preprocessed\2.txt: 'charmap' codec can't decode byte 0x81 in position 1861: character maps to <undefined>
+ 19%|███████████████▎                                                                | 119/624 [00:02<00:07, 64.40it/s]Err ./preprocessed\206.txt: 'charmap' codec can't decode byte 0x8d in position 128451: character maps to <undefined>
+Err ./preprocessed\207.txt: 'charmap' codec can't decode byte 0x81 in position 8675: character maps to <undefined>
+Err ./preprocessed\209.txt: 'charmap' codec can't decode byte 0x8d in position 128451: character maps to <undefined>
+ 21%|█████████████████▏                                                              | 134/624 [00:02<00:07, 66.24it/s]Err ./preprocessed\220.txt: 'charmap' codec can't decode byte 0x81 in position 72914: character maps to <undefined>
+Err ./preprocessed\223.txt: 'charmap' codec can't decode byte 0x81 in position 55030: character maps to <undefined>
+Err ./preprocessed\224.txt: 'charmap' codec can't decode byte 0x81 in position 250: character maps to <undefined>
+ 23%|██████████████████                                                              | 141/624 [00:02<00:08, 56.27it/s]Err ./preprocessed\229.txt: 'charmap' codec can't decode byte 0x81 in position 102301: character maps to <undefined>
+ 24%|██████████████████▉                                                             | 148/624 [00:02<00:08, 58.32it/s]Err ./preprocessed\237.txt: 'charmap' codec can't decode byte 0x8d in position 128932: character maps to <undefined>
+Err ./preprocessed\239.txt: 'charmap' codec can't decode byte 0x8d in position 6590: character maps to <undefined>
+ 25%|████████████████████▏                                                           | 157/624 [00:02<00:07, 64.34it/s]Err ./preprocessed\243.txt: 'charmap' codec can't decode byte 0x8d in position 8522: character maps to <undefined>
+ 26%|█████████████████████                                                           | 164/624 [00:02<00:07, 61.39it/s]Err ./preprocessed\250.txt: 'charmap' codec can't decode byte 0x81 in position 75: character maps to <undefined>
+Err ./preprocessed\251.txt: 'charmap' codec can't decode byte 0x81 in position 5309: character maps to <undefined>
+ 27%|█████████████████████▉                                                          | 171/624 [00:03<00:07, 58.56it/s]Err ./preprocessed\252.txt: 'charmap' codec can't decode byte 0x8d in position 33730: character maps to <undefined>
+ 29%|██████████████████████▊                                                         | 178/624 [00:03<00:07, 57.07it/s]Err ./preprocessed\260.txt: 'charmap' codec can't decode byte 0x81 in position 33980: character maps to <undefined>
+ 30%|███████████████████████▋                                                        | 185/624 [00:03<00:07, 58.94it/s]Err ./preprocessed\27.txt: 'charmap' codec can't decode byte 0x81 in position 685: character maps to <undefined>
+ 31%|████████████████████████▌                                                       | 192/624 [00:03<00:07, 60.34it/s]Err ./preprocessed\275.txt: 'charmap' codec can't decode byte 0x8d in position 212586: character maps to <undefined>
+ 32%|█████████████████████████▌                                                      | 199/624 [00:03<00:07, 59.84it/s]Err ./preprocessed\279.txt: 'charmap' codec can't decode byte 0x81 in position 102720: character maps to <undefined>
+ 33%|██████████████████████████▍                                                     | 206/624 [00:03<00:07, 58.00it/s]Err ./preprocessed\290.txt: 'charmap' codec can't decode byte 0x8d in position 559: character maps to <undefined>
+ 34%|███████████████████████████▍                                                    | 214/624 [00:03<00:06, 62.21it/s]Err ./preprocessed\293.txt: 'charmap' codec can't decode byte 0x81 in position 1226: character maps to <undefined>
+Err ./preprocessed\294.txt: 'charmap' codec can't decode byte 0x8d in position 23539: character maps to <undefined>
+Err ./preprocessed\295.txt: 'charmap' codec can't decode byte 0x81 in position 11744: character maps to <undefined>
+ 36%|████████████████████████████▍                                                   | 222/624 [00:03<00:06, 64.32it/s]Err ./preprocessed\3.txt: 'charmap' codec can't decode byte 0x81 in position 11844: character maps to <undefined>
+Err ./preprocessed\304.txt: 'charmap' codec can't decode byte 0x81 in position 93: character maps to <undefined>
+ 37%|█████████████████████████████▍                                                  | 230/624 [00:04<00:05, 66.84it/s]Err ./preprocessed\307.txt: 'charmap' codec can't decode byte 0x9d in position 13: character maps to <undefined>
+Err ./preprocessed\310.txt: 'charmap' codec can't decode byte 0x81 in position 118398: character maps to <undefined>
+ 38%|██████████████████████████████▍                                                 | 237/624 [00:04<00:05, 66.02it/s]Err ./preprocessed\311.txt: 'charmap' codec can't decode byte 0x81 in position 25520: character maps to <undefined>
+Err ./preprocessed\312.txt: 'charmap' codec can't decode byte 0x81 in position 25520: character maps to <undefined>
+ 42%|█████████████████████████████████▎                                              | 260/624 [00:04<00:05, 64.75it/s]Err ./preprocessed\336.txt: 'charmap' codec can't decode byte 0x81 in position 668: character maps to <undefined>
+ 43%|██████████████████████████████████▍                                             | 269/624 [00:04<00:05, 70.19it/s]Err ./preprocessed\343.txt: 'charmap' codec can't decode byte 0x81 in position 28726: character maps to <undefined>
+Err ./preprocessed\346.txt: 'charmap' codec can't decode byte 0x8d in position 43: character maps to <undefined>
+ 46%|████████████████████████████████████▌                                           | 285/624 [00:04<00:05, 56.81it/s]Err ./preprocessed\355.txt: 'charmap' codec can't decode byte 0x81 in position 11802: character maps to <undefined>
+Err ./preprocessed\357.txt: 'charmap' codec can't decode byte 0x81 in position 42189: character maps to <undefined>
+Err ./preprocessed\359.txt: 'charmap' codec can't decode byte 0x81 in position 41: character maps to <undefined>
+ 48%|██████████████████████████████████████▏                                         | 298/624 [00:05<00:05, 54.51it/s]Err ./preprocessed\370.txt: 'charmap' codec can't decode byte 0x81 in position 4595: character maps to <undefined>
+ 49%|██████████████████████████████████████▉                                         | 304/624 [00:05<00:06, 52.60it/s]Err ./preprocessed\375.txt: 'charmap' codec can't decode byte 0x81 in position 19052: character maps to <undefined>
+Err ./preprocessed\378.txt: 'charmap' codec can't decode byte 0x8d in position 107261: character maps to <undefined>
+ 51%|█████████████████████████████████████████▏                                      | 321/624 [00:05<00:05, 58.56it/s]Err ./preprocessed\392.txt: 'charmap' codec can't decode byte 0x9d in position 52206: character maps to <undefined>
+ 53%|██████████████████████████████████████████                                      | 328/624 [00:05<00:04, 59.92it/s]Err ./preprocessed\394.txt: 'charmap' codec can't decode byte 0x9d in position 45500: character maps to <undefined>
+Err ./preprocessed\4.txt: 'charmap' codec can't decode byte 0x81 in position 10141: character maps to <undefined>
+ 54%|██████████████████████████████████████████▉                                     | 335/624 [00:05<00:04, 58.62it/s]Err ./preprocessed\403.txt: 'charmap' codec can't decode byte 0x9d in position 77393: character maps to <undefined>
+ 56%|█████████████████████████████████████████████                                   | 351/624 [00:05<00:04, 66.11it/s]Err ./preprocessed\42.txt: 'charmap' codec can't decode byte 0x8d in position 74268: character maps to <undefined>
+ 59%|███████████████████████████████████████████████                                 | 367/624 [00:06<00:03, 68.53it/s]Err ./preprocessed\431.txt: 'charmap' codec can't decode byte 0x81 in position 7: character maps to <undefined>
+ 61%|█████████████████████████████████████████████████                               | 383/624 [00:06<00:03, 71.89it/s]Err ./preprocessed\443.txt: 'charmap' codec can't decode byte 0x81 in position 11853: character maps to <undefined>
+Err ./preprocessed\448.txt: 'charmap' codec can't decode byte 0x9d in position 15: character maps to <undefined>
+Err ./preprocessed\449.txt: 'charmap' codec can't decode byte 0x81 in position 136: character maps to <undefined>
+ 63%|██████████████████████████████████████████████████▏                             | 391/624 [00:06<00:03, 68.76it/s]Err ./preprocessed\450.txt: 'charmap' codec can't decode byte 0x81 in position 136: character maps to <undefined>
+Err ./preprocessed\451.txt: 'charmap' codec can't decode byte 0x8d in position 8: character maps to <undefined>
+Err ./preprocessed\452.txt: 'charmap' codec can't decode byte 0x81 in position 121: character maps to <undefined>
+Err ./preprocessed\456.txt: 'charmap' codec can't decode byte 0x81 in position 1206: character maps to <undefined>
+ 64%|███████████████████████████████████████████████████▏                            | 399/624 [00:06<00:03, 70.27it/s]Err ./preprocessed\46.txt: 'charmap' codec can't decode byte 0x90 in position 207786: character maps to <undefined>
+Err ./preprocessed\461.txt: 'charmap' codec can't decode byte 0x81 in position 860: character maps to <undefined>
+ 66%|█████████████████████████████████████████████████████                           | 414/624 [00:06<00:03, 60.46it/s]Err ./preprocessed\473.txt: 'charmap' codec can't decode byte 0x90 in position 55: character maps to <undefined>
+Err ./preprocessed\479.txt: 'charmap' codec can't decode byte 0x9d in position 84616: character maps to <undefined>
+ 68%|██████████████████████████████████████████████████████▏                         | 423/624 [00:07<00:02, 67.21it/s]Err ./preprocessed\482.txt: 'charmap' codec can't decode byte 0x8d in position 105: character maps to <undefined>
+Err ./preprocessed\485.txt: 'charmap' codec can't decode byte 0x81 in position 8675: character maps to <undefined>
+ 70%|████████████████████████████████████████████████████████                        | 437/624 [00:07<00:03, 60.74it/s]Err ./preprocessed\494.txt: 'charmap' codec can't decode byte 0x81 in position 298: character maps to <undefined>
+ 71%|████████████████████████████████████████████████████████▉                       | 444/624 [00:07<00:02, 60.18it/s]Err ./preprocessed\50.txt: 'charmap' codec can't decode byte 0x8d in position 418: character maps to <undefined>
+Err ./preprocessed\501.txt: 'charmap' codec can't decode byte 0x8d in position 16863: character maps to <undefined>
+ 74%|██████████████████████████████████████████████████████████▊                     | 459/624 [00:07<00:02, 60.10it/s]Err ./preprocessed\514.txt: 'charmap' codec can't decode byte 0x81 in position 946: character maps to <undefined>
+Err ./preprocessed\515.txt: 'charmap' codec can't decode byte 0x81 in position 12735: character maps to <undefined>
+ 75%|███████████████████████████████████████████████████████████▋                    | 466/624 [00:07<00:03, 52.57it/s]Err ./preprocessed\52.txt: 'charmap' codec can't decode byte 0x81 in position 380: character maps to <undefined>
+ 76%|████████████████████████████████████████████████████████████▋                   | 473/624 [00:07<00:02, 55.55it/s]Err ./preprocessed\529.txt: 'charmap' codec can't decode byte 0x81 in position 12655: character maps to <undefined>
+ 77%|█████████████████████████████████████████████████████████████▍                  | 479/624 [00:08<00:02, 56.24it/s]Err ./preprocessed\53.txt: 'charmap' codec can't decode byte 0x81 in position 6: character maps to <undefined>
+ 78%|██████████████████████████████████████████████████████████████▏                 | 485/624 [00:08<00:02, 56.48it/s]Err ./preprocessed\537.txt: 'charmap' codec can't decode byte 0x81 in position 4438: character maps to <undefined>
+Err ./preprocessed\539.txt: 'charmap' codec can't decode byte 0x81 in position 4438: character maps to <undefined>
+Err ./preprocessed\540.txt: 'charmap' codec can't decode byte 0x81 in position 4438: character maps to <undefined>
+Err ./preprocessed\541.txt: 'charmap' codec can't decode byte 0x81 in position 4438: character maps to <undefined>
+ 79%|███████████████████████████████████████████████████████████████▏                | 493/624 [00:08<00:02, 60.36it/s]Err ./preprocessed\542.txt: 'charmap' codec can't decode byte 0x81 in position 4438: character maps to <undefined>
+Err ./preprocessed\547.txt: 'charmap' codec can't decode byte 0x8d in position 108522: character maps to <undefined>
+ 80%|████████████████████████████████████████████████████████████████▏               | 501/624 [00:08<00:01, 64.04it/s]Err ./preprocessed\55.txt: 'charmap' codec can't decode byte 0x81 in position 380: character maps to <undefined>
+Err ./preprocessed\550.txt: 'charmap' codec can't decode byte 0x81 in position 69: character maps to <undefined>
+Err ./preprocessed\555.txt: 'charmap' codec can't decode byte 0x81 in position 106: character maps to <undefined>
+Err ./preprocessed\556.txt: 'charmap' codec can't decode byte 0x81 in position 106: character maps to <undefined>
+ 82%|█████████████████████████████████████████████████████████████████▎              | 509/624 [00:08<00:01, 66.69it/s]Err ./preprocessed\558.txt: 'charmap' codec can't decode byte 0x81 in position 1145: character maps to <undefined>
+Err ./preprocessed\560.txt: 'charmap' codec can't decode byte 0x81 in position 446: character maps to <undefined>
+ 83%|██████████████████████████████████████████████████████████████████▎             | 517/624 [00:08<00:01, 70.03it/s]Err ./preprocessed\570.txt: 'charmap' codec can't decode byte 0x81 in position 252362: character maps to <undefined>
+ 84%|███████████████████████████████████████████████████████████████████▎            | 525/624 [00:08<00:01, 65.36it/s]Err ./preprocessed\573.txt: 'charmap' codec can't decode byte 0x8d in position 405967: character maps to <undefined>
+Err ./preprocessed\576.txt: 'charmap' codec can't decode byte 0x81 in position 1368: character maps to <undefined>
+ 85%|████████████████████████████████████████████████████████████████████▎           | 533/624 [00:08<00:01, 67.00it/s]Err ./preprocessed\581.txt: 'charmap' codec can't decode byte 0x81 in position 47: character maps to <undefined>
+ 87%|█████████████████████████████████████████████████████████████████████▏          | 540/624 [00:08<00:01, 65.14it/s]Err ./preprocessed\585.txt: 'charmap' codec can't decode byte 0x81 in position 5763: character maps to <undefined>
+Err ./preprocessed\589.txt: 'charmap' codec can't decode byte 0x81 in position 22298: character maps to <undefined>
+Err ./preprocessed\590.txt: 'charmap' codec can't decode byte 0x81 in position 22298: character maps to <undefined>
+ 88%|██████████████████████████████████████████████████████████████████████▏         | 547/624 [00:09<00:01, 61.73it/s]Err ./preprocessed\591.txt: 'charmap' codec can't decode byte 0x81 in position 22298: character maps to <undefined>
+Err ./preprocessed\595.txt: 'charmap' codec can't decode byte 0x81 in position 356: character maps to <undefined>
+Err ./preprocessed\596.txt: 'charmap' codec can't decode byte 0x81 in position 200231: character maps to <undefined>
+ 89%|███████████████████████████████████████████████████████████████████████         | 554/624 [00:09<00:01, 61.70it/s]Err ./preprocessed\598.txt: 'charmap' codec can't decode byte 0x81 in position 200231: character maps to <undefined>
+ 92%|█████████████████████████████████████████████████████████████████████████▋      | 575/624 [00:09<00:00, 50.13it/s]Err ./preprocessed\618.txt: 'charmap' codec can't decode byte 0x8f in position 1401: character maps to <undefined>
+Err ./preprocessed\62.txt: 'charmap' codec can't decode byte 0x8d in position 105: character maps to <undefined>
+100%|████████████████████████████████████████████████████████████████████████████████| 624/624 [00:10<00:00, 59.72it/s]
+Traceback (most recent call last):
+  File "C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new\create_corpus.py", line 78, in <module>
+    topics_counts[t].append(doc_occurrences[i][t])
+                            ~~~~~~~~~~~~~~~~~~^^^
+KeyError: 'Transparency'
+
+Idem avec python create_corpus.py -t themes.json -d preprocessed/ -m iramuteq
+=>Rajout UTF-8 : f = open(fname, "r", encoding="utf-8")
+
+(venv) C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new>python create_corpus.py -t themes.json -d preprocessed/ -m cortext
+Namespace(data='preprocessed/', method='cortext', themes='themes.json')
+100%|███████████████████████████████████████████████████████████████████████████████| 624/624 [00:02<00:00, 243.05it/s]
+Traceback (most recent call last):
+  File "C:\Users\Allegre\Documents\TP_MSIA\Projet_NLP_AMR\new\create_corpus.py", line 108, in <module>
+    print(doc_occurrences[i]["contents"], file=file)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Logiciel\_prog\Python\3.12\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u0103' in position 225: character maps to <undefined>
+
+=>Rajout UTF-8 : file = open(f"{t.strip('*')}/{i}.txt", "w", encoding="utf-8")
+
+
+### TEST
+(Get-ChildItem docs |Measure-Object).count
+    =>629
+(Get-ChildItem docs\*.pdf |Measure-Object).count
+    =>307
+(Get-ChildItem docs\*.html |Measure-Object).count
+    =>321
+(Get-ChildItem txts |Measure-Object).count
+    =>625
+$list=('fairness', 'algorithmic fairness', 'bias', 'gdpr', 'discrimination', 'biometric', 'regulation', 'artificial general intelligence')
+$list | %{ $tmp=(Get-Content .\txts\*.txt |Select-String -Pattern $_ |Measure-Object).count;$a=$_+' : '+$tmp;$a }
+fairness : 1708
+algorithmic fairness : 53
+bias : 2938
+gdpr : 1244
+discrimination : 1978
+biometric : 560
+regulation : 3505
+artificial general intelligence : 80
